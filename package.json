@@ -1,6 +1,6 @@
 {
   "name": "kati-backoffice",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.4",
@@ -16,6 +16,7 @@
     "@types/react-dom": "^18.0.6",
     "firebase": "^9.11.0",
     "moment": "^2.29.4",
+    "query-string": "^7.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.4.2",

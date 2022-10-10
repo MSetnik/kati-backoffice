@@ -16,10 +16,15 @@ export const getStoreData = async () => {
 }
 
 export const addNewCatalog = async ({ storeId, dateFrom, dateTo }) => {
-  console.log(storeId, dateFrom, dateTo)
-  await addDoc(collection(firestore, 'catalog'), {
+  const addedCatalogId = await addDoc(collection(firestore, 'catalog'), {
     storeId,
     dateFrom,
     dateTo
-  }).then(r => console.log(r)).catch(e => console.log(e))
+  })
+    .then(r => {
+      return r.id
+    })
+    .catch(e => console.log(e))
+
+  return addedCatalogId
 }

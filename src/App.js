@@ -6,12 +6,15 @@ import { TextField } from '@mui/material'
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import moment from 'moment'
 import { addNewCatalog, getStoreData } from './endpoints/firestore'
+import { Link, redirect, useNavigate } from 'react-router-dom'
 
 function App () {
   const [datePickerStart, setDatePickerStart] = useState(moment())
   const [datePickerEnd, setDatePickerEnd] = useState(moment())
   const [selectedStoreId, setSelectedStoreId] = useState('')
   const [stores, setStores] = useState([])
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     const getStores = async () => {
@@ -21,9 +24,11 @@ function App () {
     getStores()
   }, [])
 
-  const addCatalog = () => {
+  const addCatalog = async () => {
     if (datePickerStart !== '' && datePickerEnd !== '' && selectedStoreId !== '' && selectedStoreId !== 0) {
-      addNewCatalog({ storeId: selectedStoreId, dateFrom: datePickerStart, dateTo: datePickerEnd })
+      const catalogId = await addNewCatalog({ storeId: selectedStoreId, dateFrom: datePickerStart.toDate(), dateTo: datePickerEnd.toDate() })
+      const params = `catalog_id=${catalogId}&store_id=${selectedStoreId}`
+      navigate(`/add-to-catalog/${params}`)
     } else {
       alert('unesite vrijednost u sva polja')
     }
@@ -36,7 +41,7 @@ function App () {
         <button data-bs-toggle="modal" data-bs-target="#exampleModal" type="button" className="btn btn-primary">Novi katalog</button>
       </div>
       <div className="col-sm">
-       <button type="button" className="btn btn-primary">Primary</button>
+       <Link to={`/add-to-catalog/catalog_id=${0}&store_id=${0}`}><button type="button" className="btn btn-primary">Dodaj proizvode</button></Link>
       </div>
       <div className="col-sm">
        <button type="button" className="btn btn-primary">Primary</button>
@@ -58,14 +63,13 @@ function App () {
                 <div className="form-row align-items-center">
                   <div className="col-auto my-1">
                     <select className="custom-select mr-sm-2" id="inlineFormCustomSelect" onChange={(e) => setSelectedStoreId(e.target.value)}>
-                      <option defaultValue={0}>Odaberi trgovinu</option>
-                      <option value={'test'}>Odaberi trgovinu</option>
+                      <option defaultValue={-1}>Odaberi trgovinu</option>
 
-                      {/* {
+                      {
                         stores.map((store, index) => (
                           <option key={index} value={store.id}>{store.name}</option>
                         ))
-                      } */}
+                      }
 
                     </select>
                   </div>
@@ -100,7 +104,7 @@ function App () {
                     </LocalizationProvider>
                   </div>
                   <div className="col-auto my-1">
-                    <button className="btn btn-primary" onClick={() => addCatalog()}>Dodaj novi katalog</button>
+                    <button className="btn btn-primary" data-bs-dismiss="modal" onClick={() => addCatalog()}>Dodaj novi katalog</button>
                   </div>
                 </div>
             </div>
