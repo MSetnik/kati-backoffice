@@ -15,7 +15,7 @@ export const getStoreData = async () => {
   return lStores
 }
 
-export const addNewCatalog = async ({ storeId, dateFrom, dateTo }) => {
+export const addNewCatalogToDb = async ({ storeId, dateFrom, dateTo }) => {
   const addedCatalogId = await addDoc(collection(firestore, 'catalog'), {
     storeId,
     dateFrom,
@@ -27,4 +27,57 @@ export const addNewCatalog = async ({ storeId, dateFrom, dateTo }) => {
     .catch(e => console.log(e))
 
   return addedCatalogId
+}
+
+// Fetching category data
+export const getCategories = async () => {
+  const storeCol = collection(firestore, 'category')
+  const categorySnapshot = await getDocs(storeCol)
+  const lCategories = categorySnapshot.docs.map(doc => {
+    const category = {
+      id: doc.id,
+      name: doc.data().name
+    }
+    return category
+  })
+  return lCategories
+}
+
+// Fetching catalog data
+export const getAllCatalog = async () => {
+  const catalogCol = collection(firestore, 'catalog')
+  const catalogSnapshot = await getDocs(catalogCol)
+  const lCatalogs = catalogSnapshot.docs.map(doc => {
+    const catalog = {
+      id: doc.id,
+      storeId: doc.data().storeId,
+      dateFrom: doc.data().dateFrom.seconds,
+      dateTo: doc.data().dateTo.seconds
+    }
+    return catalog
+  })
+
+  return lCatalogs
+}
+
+// add product to firestore
+export const addProductToFirestore = async ({ catalogId, storeId, categoryId, name, description, fullPrice, discountedPrice, imgUrl, startAt, endAt }) => {
+  const addProductToDB = await addDoc(collection(firestore, 'product'), {
+    catalogId,
+    storeId,
+    categoryId,
+    name,
+    description,
+    fullPrice,
+    discountedPrice,
+    imgUrl,
+    startAt,
+    endAt
+  })
+    .then(r => {
+      return r.id
+    })
+    .catch(e => console.log(e))
+
+  return addProductToDB
 }

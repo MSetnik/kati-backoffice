@@ -5,8 +5,12 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { TextField } from '@mui/material'
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import moment from 'moment'
-import { addNewCatalog, getStoreData } from './endpoints/firestore'
+import { addNewCatalogToDb, getStoreData } from './endpoints/firestore'
 import { Link, redirect, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { fetchStores } from './store/store-slice'
+import { fetchCategories } from './store/category-slice'
+import { addNewCatalog, fetchCatalogs } from './store/catalog-slice'
 
 function App () {
   const [datePickerStart, setDatePickerStart] = useState(moment())
@@ -14,11 +18,18 @@ function App () {
   const [selectedStoreId, setSelectedStoreId] = useState('')
   const [stores, setStores] = useState([])
 
+  // redux
+  const dispatch = useDispatch()
+
   const navigate = useNavigate()
 
   useEffect(() => {
     const getStores = async () => {
-      setStores(await getStoreData())
+      dispatch(fetchStores()).then(resp => {
+        setStores(resp.payload)
+      })
+      dispatch(fetchCategories())
+      dispatch(fetchCatalogs())
     }
 
     getStores()
@@ -26,7 +37,8 @@ function App () {
 
   const addCatalog = async () => {
     if (datePickerStart !== '' && datePickerEnd !== '' && selectedStoreId !== '' && selectedStoreId !== 0) {
-      const catalogId = await addNewCatalog({ storeId: selectedStoreId, dateFrom: datePickerStart.toDate(), dateTo: datePickerEnd.toDate() })
+      const catalogId = await addNewCatalogToDb({ storeId: selectedStoreId, dateFrom: datePickerStart.toDate(), dateTo: datePickerEnd.toDate() })
+      dispatch(addNewCatalog({ storeId: selectedStoreId, dateFrom: datePickerStart.toDate(), dateTo: datePickerEnd.toDate() }))
       const params = `catalog_id=${catalogId}&store_id=${selectedStoreId}`
       navigate(`/add-to-catalog/${params}`)
     } else {
