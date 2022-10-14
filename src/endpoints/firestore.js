@@ -1,5 +1,5 @@
 import { firestore } from './firebase-config'
-import { addDoc, collection, getDocs } from 'firebase/firestore'
+import { doc, addDoc, collection, deleteDoc, getDocs } from 'firebase/firestore'
 
 export const getStoreData = async () => {
   const storeCol = collection(firestore, 'store')
@@ -27,6 +27,19 @@ export const addNewCatalogToDb = async ({ storeId, dateFrom, dateTo }) => {
     .catch(e => console.log(e))
 
   return addedCatalogId
+}
+
+// add new category to firestore
+export const addNewCategoryToDb = async ({ categoryName }) => {
+  const addedCategoryId = await addDoc(collection(firestore, 'category'), {
+    name: categoryName
+  })
+    .then(r => {
+      return r.id
+    })
+    .catch(e => console.log(e))
+
+  return addedCategoryId
 }
 
 // Fetching category data
@@ -80,4 +93,32 @@ export const addProductToFirestore = async ({ catalogId, storeId, categoryId, na
     .catch(e => console.log(e))
 
   return addProductToDB
+}
+
+// Fetching products data
+export const getAllProducts = async () => {
+  const productsCol = collection(firestore, 'product')
+  const productsSnapshot = await getDocs(productsCol)
+  const lProducts = productsSnapshot.docs.map(doc => {
+    const product = {
+      id: doc.id,
+      name: doc.data().name,
+      categoryId: doc.data().categoryId,
+      storeId: doc.data().storeId,
+      description: doc.data().description,
+      fullPrice: doc.data().fullPrice,
+      discountedPrice: doc.data().discountedPrice,
+      imgUrl: doc.data().imgUrl,
+      startAt: doc.data().startAt.seconds,
+      endAt: doc.data().endAt.seconds,
+      catalogId: doc.data().catalogId
+    }
+    return product
+  })
+  return lProducts
+}
+
+// Fetching products data
+export const removeProductFromDB = async (productId) => {
+  await deleteDoc(doc(firestore, 'product', productId))
 }

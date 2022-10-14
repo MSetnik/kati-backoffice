@@ -1,12 +1,13 @@
 import './index.css'
-import { MenuItem, Select, TextField } from '@mui/material'
+import { InputLabel, MenuItem, Select, TextField } from '@mui/material'
 import moment from 'moment'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import { storage } from '../endpoints/firebase-config'
+import { storage } from '../../endpoints/firebase-config'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
-import { addProductToFirestore } from '../endpoints/firestore'
+import { addProductToFirestore } from '../../endpoints/firestore'
+import SearchableSelect from '../../components/organisms/searchable-select-mui'
 
 const AddProducts = (props) => {
   const { stores } = useSelector(state => state.stores)
@@ -25,17 +26,27 @@ const AddProducts = (props) => {
   const [discountedPrice, setDiscounetdPrice] = useState('')
   const [selectedImage, setSelectedImage] = useState(null)
   const [catalogSelect, setCatalogSelect] = useState('default')
-  const [catalogStart, setCatalogStart] = useState(0)
-  const [catalogEnd, setCatalogEnd] = useState(0)
+  const [catalogStart, setCatalogStart] = useState()
+  const [catalogEnd, setCatalogEnd] = useState()
 
   const { query } = useParams()
 
   const catalogId = query.split('&')[0].split('=')[1]
   const storeId = query.split('&')[1].split('=')[1]
 
+  const imageInput = useRef(null)
+
   useEffect(() => {
-    setStoreSelect(storeId)
-  }, [storeId !== 0])
+    if (storeId !== '0') {
+      setStoreSelect(storeId)
+      getStoreName(storeId)
+    }
+
+    if (catalogId !== '0') {
+      setCatalogSelect(catalogId)
+      getCatalogDate(catalogId)
+    }
+  }, [])
 
   const getStoreName = (storeId) => {
     stores.forEach(store => {
@@ -69,39 +80,57 @@ const AddProducts = (props) => {
       .catch(e => console.log(e))
   }
 
-  const saveProduct = async () => {
-    setProductAddedLoading(false)
-    await uploadImage().then(async (imageUrl) => {
-      await addProductToFirestore({
-        catalogId: catalogId === '0' ? catalogSelect : catalogId,
-        storeId: storeSelect,
-        categoryId: productCategory,
-        name: productName,
-        description: productDescription,
-        imgUrl: imageUrl,
-        startAt: catalogStart,
-        endAt: catalogEnd,
-        fullPrice,
-        discountedPrice
+  const saveProduct = async (event) => {
+    if (
+      storeSelect !== 'default' &&
+      catalogSelect !== 'default' &&
+      productCategory !== 'default' &&
+      productName !== '' &&
+      fullPrice !== '' &&
+      discountedPrice !== '' &&
+      fullPrice !== 0 &&
+      discountedPrice !== 0 &&
+      fullPrice > discountedPrice
+    ) {
+      await uploadImage().then(async (imageUrl) => {
+        await addProductToFirestore({
+          catalogId: catalogId === '0' ? catalogSelect : catalogId,
+          storeId: storeSelect,
+          categoryId: productCategory,
+          name: productName,
+          description: productDescription,
+          imgUrl: imageUrl,
+          startAt: catalogStart,
+          endAt: catalogEnd,
+          fullPrice: fullPrice.toString(),
+          discountedPrice: discountedPrice.toString()
+        })
+          .then(() => {
+            alert('Dodano')
+            setProductAddedLoading(false)
+            imageInput.current.value = null
+            setProductDescription('')
+            setProductName('')
+            setFullPrice('')
+            setDiscounetdPrice('')
+            setSelectedImage(null)
+          })
+          .catch(e => {
+            alert(e)
+            setProductAddedLoading(false)
+          })
       })
         .catch(e => {
           alert(e)
-          setProductAddedLoading(true)
+          setProductAddedLoading(false)
         })
-    })
-      .catch(e => {
-        alert(e)
-        setProductAddedLoading(true)
-      })
-      .finally(() => {
-        setProductAddedLoading(false)
-
-        setProductDescription('')
-        setProductName('')
-        setFullPrice('')
-        setDiscounetdPrice('')
-        setSelectedImage(null)
-      })
+    } else {
+      if (fullPrice < discountedPrice) {
+        alert('Puna cijena mora biti veca od snizene')
+      } else {
+        alert('Ispunite sva polja')
+      }
+    }
   }
 
   // TODO: POSTAVIT OGRANICENJA
@@ -110,9 +139,8 @@ const AddProducts = (props) => {
       <div className='col col-6'>
         <div className="row mt-3">
           <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
             value={storeSelect}
+            style={{ width: '100%' }}
             label="Odaberi trgovinu"
             onChange={(e) => {
               setStoreSelect(e.target.value)
@@ -129,8 +157,6 @@ const AddProducts = (props) => {
 
         <div className="row mt-3">
           <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
             value={catalogSelect}
             label="Odaberite katalog"
             onChange={(e) => {
@@ -138,23 +164,22 @@ const AddProducts = (props) => {
               getCatalogDate(e.target.value)
             }}
           >
-             <MenuItem key={-1}value={'default'}>Odaberite katalog</MenuItem>
-            {catalog.map((catalog, index) => {
-              // prikazi samo kataloge koji su bili unazad mjesec dana (2629743 s = 30,44 dana)
+              <MenuItem key={-1}value={'default'}>Odaberite katalog</MenuItem>
+              {catalog.map((catalog, index) => {
+                // prikazi samo kataloge koji su bili unazad mjesec dana (2629743 s = 30,44 dana)
 
-              if (catalog.storeId === storeSelect && ((Date.now().toString().substr(0, 10) - 2629743).toString()) < catalog.dateFrom) {
-                return <MenuItem key={index} value={catalog.id}>{`${storeSelectName} od ${moment.unix(catalog.dateFrom).format('DD.MM.YY')} do ${moment.unix(catalog.dateTo).format('DD.MM.YY')}`}</MenuItem>
-              }
-              return null
-            })}
+                if (catalog.storeId === storeSelect && ((Date.now().toString().substr(0, 10) - 2629743).toString()) < catalog.dateFrom) {
+                  return <MenuItem key={index} value={catalog.id}>{`${storeSelectName} od ${moment.unix(catalog.dateFrom).format('DD.MM.YY')} do ${moment.unix(catalog.dateTo).format('DD.MM.YY')}`}</MenuItem>
+                }
+                return null
+              })}
           </Select>
           {/* <TextField id="outlined-basic" label="katalog" variant="outlined" disabled value={catalogId}/> */}
         </div>
 
         <div className="row mt-3">
+          {/* <SearchableSelect selectOptions={categories} selectedId={productCategory} setSelectedId={setProductCategory}/> */}
           <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
             value={productCategory}
             label="Odaberi kategoriju"
             onChange={(e) => setProductCategory(e.target.value)}
@@ -182,12 +207,12 @@ const AddProducts = (props) => {
         </div>
 
         <div className="row mt-3">
-          <input type={'file'} onChange={(e) => setSelectedImage(e.target.files[0])} />
+          <input ref={imageInput} type={'file'} onChange={(e) => setSelectedImage(e.target.files[0])} />
         </div>
       </div>
 
       <div className="row mt-3">
-        <button disabled={productAddedLoading} type="button" className="btn btn-primary" onClick={() => saveProduct()}>Dodaj proizvod</button>
+        <button disabled={productAddedLoading} type="button" className="btn btn-primary" onClick={(e) => saveProduct(e)}>Dodaj proizvod</button>
       </div>
    </div>
   )

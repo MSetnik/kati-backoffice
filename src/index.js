@@ -7,6 +7,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import AddProducts from './screens/add-products'
 import { store } from './store'
 import { Provider } from 'react-redux'
+import EditCatalog from './screens/edit-catalog'
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,10 @@ const router = createBrowserRouter([
   {
     path: '/add-to-catalog/:query',
     element: <AddProducts />
+  },
+  {
+    path: '/edit-catalog',
+    element: <EditCatalog />
   }
 ])
 

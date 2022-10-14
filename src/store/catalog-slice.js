@@ -13,7 +13,7 @@ const catalogSlice = createSlice({
       state.catalog = action.payload
     },
     addNewCatalog (state, action) {
-      state.catalog = [...state.catalog, action]
+      state.catalog.push(action.payload)
     }
   },
   extraReducers: builder => {

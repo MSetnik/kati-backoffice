@@ -10,6 +10,9 @@ const categorySlice = createSlice({
   reducers: {
     setCategories (state, action) {
       state.categories = action.payload
+    },
+    addNewCategory (state, action) {
+      state.categories.push(action.payload)
     }
   },
   extraReducers: builder => {
@@ -31,5 +34,5 @@ export const fetchCategories = createAsyncThunk('categories/fetchCategories', as
   return response
 })
 
-export const { setCategories } = categorySlice.actions
+export const { setCategories, addNewCategory } = categorySlice.actions
 export default categorySlice.reducer

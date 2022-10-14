@@ -1,0 +1,13 @@
+.container-edit-catalog {
+    margin-top: 200px;
+}
+
+table tr{
+    text-align: center;
+}
+
+.select-btn-div{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
