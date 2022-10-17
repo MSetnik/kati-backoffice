@@ -17,6 +17,13 @@ const productSlice = createSlice({
           state.products.splice(index, 1)
         }
       })
+    },
+    removeProductFromCatalog (state, action) {
+      state.products.forEach((item, index) => {
+        if (item.catalogId === action.payload) {
+          state.products.splice(index, 1)
+        }
+      })
     }
   },
   extraReducers: builder => {
@@ -38,5 +45,5 @@ export const fetchAllProducts = createAsyncThunk('products/fetchAllProducts', as
   return response
 })
 
-export const { setProducts, removeProduct } = productSlice.actions
+export const { setProducts, removeProduct, removeProductFromCatalog } = productSlice.actions
 export default productSlice.reducer

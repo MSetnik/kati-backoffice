@@ -2,11 +2,11 @@ import { MenuItem, Select } from '@mui/material'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { removeProductFromDB } from '../../endpoints/firestore'
+import { removeCatalogFromDB, removeProductByCatalogId, removeProductFromDB } from '../../endpoints/firestore'
 import { getCatalogDate, getCategoryName, getStoreName } from '../../helpers'
-import { fetchCatalogs } from '../../store/catalog-slice'
+import { fetchCatalogs, removeCatalog } from '../../store/catalog-slice'
 import { fetchCategories } from '../../store/category-slice'
-import { fetchAllProducts, removeProduct } from '../../store/products-slice'
+import { fetchAllProducts, removeProduct, removeProductFromCatalog } from '../../store/products-slice'
 import { fetchStores } from '../../store/store-slice'
 import './index.css'
 
@@ -29,6 +29,22 @@ const EditCatalog = () => {
     }
   }
 
+  const deleteCatalog = async () => {
+    if (confirm('Obrisat cete odabrani katalog sa svim njegovim proizvodima. Sljedeća radnja se ne može poništiti. Želite li nastaviti?')) {
+      await removeCatalogFromDB(selectedCatalogId)
+      await removeProductByCatalogId(selectedCatalogId)
+
+      setSelectedCatalogId('1')
+
+      dispatch(removeCatalog(selectedCatalogId))
+      dispatch(removeProductFromCatalog(selectedCatalogId))
+
+      console.log('Thing was saved to the database.')
+    } else {
+      // Do nothing!
+    }
+  }
+
   const refetchData = async () => {
     dispatch(fetchStores())
     dispatch(fetchCategories())
@@ -39,7 +55,7 @@ const EditCatalog = () => {
   return (
     <div className='container container-edit-catalog'>
         <div className="select-btn-div">
-            <Select
+          <Select
             value={selectedCatalogId}
             label="Odaberi kategoriju"
             onChange={(e) => setSelectedCatalogId(e.target.value)}
@@ -49,7 +65,10 @@ const EditCatalog = () => {
                   return <MenuItem key={index} value={catalog.id}>{`${getStoreName(catalog.storeId, stores)} od ${moment.unix(catalog.dateFrom).format('DD.MM.')} do ${moment.unix(catalog.dateTo).format('DD.MM.')}`}</MenuItem>
                 })}
             </Select>
-            <button type="button" className="btn btn-primary" onClick={() => refetchData()}>Ucitaj podatke</button>
+            <div>
+              <button type="button" className="btn btn-primary btn-refetch-catalog" onClick={() => refetchData()}>Ucitaj podatke</button>
+              <button type="button" className="btn btn-danger" onClick={() => deleteCatalog()}>Obrisi katalog</button>
+            </div>
         </div>
         <table className="table">
             <thead>

@@ -14,6 +14,13 @@ const catalogSlice = createSlice({
     },
     addNewCatalog (state, action) {
       state.catalog.push(action.payload)
+    },
+    removeCatalog (state, action) {
+      state.catalog.forEach((item, index) => {
+        if (item.id === action.payload) {
+          state.catalog.splice(index, 1)
+        }
+      })
     }
   },
   extraReducers: builder => {
@@ -35,5 +42,5 @@ export const fetchCatalogs = createAsyncThunk('catalogs/fetchCatalogs', async ()
   return response
 })
 
-export const { setCatalogs, addNewCatalog } = catalogSlice.actions
+export const { setCatalogs, addNewCatalog, removeCatalog } = catalogSlice.actions
 export default catalogSlice.reducer

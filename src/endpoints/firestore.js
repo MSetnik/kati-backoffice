@@ -1,5 +1,5 @@
 import { firestore } from './firebase-config'
-import { doc, addDoc, collection, deleteDoc, getDocs } from 'firebase/firestore'
+import { doc, addDoc, collection, deleteDoc, getDocs, query, where } from 'firebase/firestore'
 
 export const getStoreData = async () => {
   const storeCol = collection(firestore, 'store')
@@ -118,7 +118,19 @@ export const getAllProducts = async () => {
   return lProducts
 }
 
-// Fetching products data
+// remove product from db
 export const removeProductFromDB = async (productId) => {
   await deleteDoc(doc(firestore, 'product', productId))
+}
+
+// remove catalog from db
+export const removeProductByCatalogId = async (catalogId) => {
+  const q = query(collection(firestore, 'product'), where('catalogId', '==', catalogId))
+  const productsSnapshot = await getDocs(q)
+  productsSnapshot.forEach((doc) => {
+    deleteDoc(doc.ref)
+  })
+}
+export const removeCatalogFromDB = async (catalogId) => {
+  await deleteDoc(doc(firestore, 'catalog', catalogId))
 }

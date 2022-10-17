@@ -125,7 +125,7 @@ const AddProducts = (props) => {
           setProductAddedLoading(false)
         })
     } else {
-      if (fullPrice < discountedPrice) {
+      if (parseFloat(fullPrice) < parseFloat(discountedPrice)) {
         alert('Puna cijena mora biti veca od snizene')
       } else {
         alert('Ispunite sva polja')
