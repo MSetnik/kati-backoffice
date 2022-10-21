@@ -87,10 +87,10 @@ const AddProducts = (props) => {
       productCategory !== 'default' &&
       productName !== '' &&
       fullPrice !== '' &&
-      discountedPrice !== '' &&
+      // discountedPrice !== '' &&
       fullPrice !== 0 &&
       discountedPrice !== 0 &&
-      fullPrice > discountedPrice
+      fullPrice >= discountedPrice
     ) {
       await uploadImage().then(async (imageUrl) => {
         await addProductToFirestore({
@@ -103,7 +103,7 @@ const AddProducts = (props) => {
           startAt: catalogStart,
           endAt: catalogEnd,
           fullPrice: fullPrice.toString(),
-          discountedPrice: discountedPrice.toString()
+          discountedPrice: productCategory === '1' ? fullPrice.toString() : discountedPrice.toString()
         })
           .then(() => {
             alert('Dodano')
@@ -201,9 +201,13 @@ const AddProducts = (props) => {
           <div className='col col-6'>
             <TextField type={'number'} id="outlined-basic" label="Puna cijena" variant="outlined" value={fullPrice} onChange={(e) => setFullPrice(e.target.value)}/>
           </div>
-          <div className='col col-6'>
-            <TextField type={'number'} id="outlined-basic" label="Snizena cijena" variant="outlined" value={discountedPrice} onChange={(e) => setDiscounetdPrice(e.target.value)} />
-          </div>
+          {
+            productCategory !== '1' &&
+            <div className='col col-6'>
+              <TextField type={'number'} id="outlined-basic" label="Snizena cijena" variant="outlined" value={discountedPrice} onChange={(e) => setDiscounetdPrice(e.target.value)} />
+            </div>
+          }
+
         </div>
 
         <div className="row mt-3">
