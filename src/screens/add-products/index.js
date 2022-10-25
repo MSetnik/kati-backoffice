@@ -81,54 +81,107 @@ const AddProducts = (props) => {
   }
 
   const saveProduct = async (event) => {
-    if (
-      storeSelect !== 'default' &&
-      catalogSelect !== 'default' &&
-      productCategory !== 'default' &&
-      productName !== '' &&
-      fullPrice !== '' &&
-      // discountedPrice !== '' &&
-      fullPrice !== 0 &&
-      discountedPrice !== 0 &&
-      fullPrice >= discountedPrice
-    ) {
-      await uploadImage().then(async (imageUrl) => {
-        await addProductToFirestore({
-          catalogId: catalogId === '0' ? catalogSelect : catalogId,
-          storeId: storeSelect,
-          categoryId: productCategory,
-          name: productName,
-          description: productDescription,
-          imgUrl: imageUrl,
-          startAt: catalogStart,
-          endAt: catalogEnd,
-          fullPrice: fullPrice.toString(),
-          discountedPrice: productCategory === '1' ? fullPrice.toString() : discountedPrice.toString()
-        })
-          .then(() => {
-            alert('Dodano')
-            setProductAddedLoading(false)
-            imageInput.current.value = null
-            setProductDescription('')
-            setProductName('')
-            setFullPrice('')
-            setDiscounetdPrice('')
-            setSelectedImage(null)
+    if (discountedPrice !== '') {
+      if (
+        storeSelect !== 'default' &&
+        catalogSelect !== 'default' &&
+        productCategory !== 'default' &&
+        productName !== '' &&
+        fullPrice !== '' &&
+        // discountedPrice !== '' &&
+        fullPrice !== 0 &&
+        discountedPrice !== 0 &&
+        parseFloat(fullPrice) >= parseFloat(discountedPrice)
+      ) {
+        await uploadImage().then(async (imageUrl) => {
+          await addProductToFirestore({
+            catalogId: catalogId === '0' ? catalogSelect : catalogId,
+            storeId: storeSelect,
+            categoryId: productCategory,
+            name: productName,
+            description: productDescription,
+            imgUrl: imageUrl,
+            startAt: catalogStart,
+            endAt: catalogEnd,
+            fullPrice: fullPrice.toString(),
+            discountedPrice: productCategory === '1' ? fullPrice.toString() : discountedPrice.toString()
           })
+            .then(() => {
+              alert('Dodano')
+              setProductAddedLoading(false)
+              imageInput.current.value = null
+              setProductDescription('')
+              setProductName('')
+              setFullPrice('')
+              setDiscounetdPrice('')
+              setSelectedImage(null)
+            })
+            .catch(e => {
+              alert(e)
+              setProductAddedLoading(false)
+            })
+        })
           .catch(e => {
             alert(e)
             setProductAddedLoading(false)
           })
-      })
-        .catch(e => {
-          alert(e)
-          setProductAddedLoading(false)
-        })
-    } else {
-      if (parseFloat(fullPrice) < parseFloat(discountedPrice)) {
-        alert('Puna cijena mora biti veca od snizene')
       } else {
-        alert('Ispunite sva polja')
+        if (parseFloat(fullPrice) < parseFloat(discountedPrice)) {
+          alert('Puna cijena mora biti veca od snizene')
+        } else {
+          console.log(parseFloat(fullPrice) >= parseFloat(discountedPrice))
+          alert('Ispunite sva polja')
+        }
+      }
+    } else {
+      if (
+        storeSelect !== 'default' &&
+        catalogSelect !== 'default' &&
+        productCategory !== 'default' &&
+        productName !== '' &&
+        fullPrice !== '' &&
+        // discountedPrice !== '' &&
+        fullPrice !== 0
+      ) {
+        await uploadImage().then(async (imageUrl) => {
+          await addProductToFirestore({
+            catalogId: catalogId === '0' ? catalogSelect : catalogId,
+            storeId: storeSelect,
+            categoryId: productCategory,
+            name: productName,
+            description: productDescription,
+            imgUrl: imageUrl,
+            startAt: catalogStart,
+            endAt: catalogEnd,
+            fullPrice: fullPrice.toString(),
+            discountedPrice: productCategory === '1' ? fullPrice.toString() : discountedPrice.toString()
+          })
+            .then(() => {
+              alert('Dodano')
+              setProductAddedLoading(false)
+              imageInput.current.value = null
+              setProductDescription('')
+              setProductName('')
+              setFullPrice('')
+              setDiscounetdPrice('')
+              setSelectedImage(null)
+            })
+            .catch(e => {
+              alert(e)
+              setProductAddedLoading(false)
+            })
+        })
+          .catch(e => {
+            alert(e)
+            setProductAddedLoading(false)
+          })
+      } else {
+        if (parseFloat(fullPrice) < parseFloat(discountedPrice)) {
+          alert('Puna cijena mora biti veca od snizene')
+        } else {
+          console.log(parseFloat(fullPrice) >= parseFloat(discountedPrice))
+          alert('Ispunite sva polja')
+        }
       }
     }
   }
